@@ -5,7 +5,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 public class Player {
 
-    private Vector3D postion = new Vector3D(0.0, 0.0, GameController.CELL_SIZE);
+    private Vector3D postion = new Vector3D(0.0, 0.0, GameScene.CELL_SIZE);
 
     /* Angles are in degrees */
 

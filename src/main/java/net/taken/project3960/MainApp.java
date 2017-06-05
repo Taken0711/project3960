@@ -16,6 +16,10 @@ public class MainApp extends Application {
         launch(args);
     }
 
+    private static void logFps(Integer fps) {
+        logger.debug("FPS: " + fps);
+    }
+
     public void start(Stage stage) throws Exception {
 
         logger.info("Starting Hello JavaFX and Maven demonstration application");
@@ -35,6 +39,6 @@ public class MainApp extends Application {
         stage.setScene(scene);
         stage.show();
 
-        new GameLoop(gameController::tick, gameController::render, i -> {}).start();
+        new GameLoop(gameController::tick, gameController::render, MainApp::logFps).start();
     }
 }
