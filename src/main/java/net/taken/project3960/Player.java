@@ -22,10 +22,14 @@ public class Player {
         return new Vector3D(azimuth, elevation);
     }
 
+    /**
+     * Return the lookbasis with z align to the look and (x, y) as undirect 2d basis
+     * @return
+     */
     public Vector3D[] getLookBasis() {
-        Vector3D e1 = getLookVector();
-        Vector3D e2 = new Vector3D(-e1.getY(), e1.getX(), e1.getZ());
-        Vector3D e3 = e1.crossProduct(e2);
+        Vector3D e3 = getLookVector();
+        Vector3D e1 = new Vector3D(e3.getY(), -e3.getX(), -e3.getZ());
+        Vector3D e2 = e1.crossProduct(e3);
         return new Vector3D[] {e1, e2, e3};
     }
 }

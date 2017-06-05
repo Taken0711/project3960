@@ -6,6 +6,7 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import net.taken.project3960.exception.NonDisplayabledPoint;
 import net.taken.project3960.util.CanvasUtils;
+import net.taken.project3960.util.math.TransformationMatrix;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 import org.apache.commons.math3.linear.ArrayRealVector;
@@ -14,8 +15,6 @@ import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.util.Optional;
 
 import static java.lang.Math.*;
 import static net.taken.project3960.util.geometry.GeometryUtils.*;
@@ -32,7 +31,7 @@ public class GameController {
     /**
      * Horizontal FOV in degrees
      */
-    public static final double HORIZONTAL_FOV = 90.0;
+    public static final double HORIZONTAL_FOV = 95.0;
     /**
      * Vertical FOV in degrees
      */
@@ -58,36 +57,42 @@ public class GameController {
         CanvasUtils.clear(gameCanvas);
         GraphicsContext gc = gameCanvas.getGraphicsContext2D();
 
-        drawGround(gc);
+        RealMatrix cameraSpaceMatrix = TransformationMatrix.getTranslationMatrix(player.getPostion().negate());
+        Vector3D[] lookBasis = player.getLookBasis();
+        RealMatrix projectionMatrix = TransformationMatrix.getChangeBasisMatrix(lookBasis);
+        RealMatrix clippingMatrix = MatrixUtils.createRealMatrix(4, 4);
+                clippingMatrix.setEntry(0, 0, 1.0 / (tan(toRadian(HORIZONTAL_FOV / 2.0))));
+                clippingMatrix.setEntry(1, 1, 1.0 / tan(toRadian(VERTICAL_FOV / 2.0)));
+                clippingMatrix.setEntry(2, 2, (-FAR_DISTANCE - NEAR_DISTANCE) / (FAR_DISTANCE - NEAR_DISTANCE));
+                clippingMatrix.setEntry(2, 3, (2 * NEAR_DISTANCE * FAR_DISTANCE) / (NEAR_DISTANCE - FAR_DISTANCE));
+                clippingMatrix.setEntry(3, 2, 1);
+
+        RealMatrix transformMatrix = cameraSpaceMatrix.preMultiply(projectionMatrix).preMultiply(clippingMatrix);
+
+        drawGround(gc, transformMatrix);
     }
 
-    private void drawGround(GraphicsContext gc) {
+    private void drawGround(GraphicsContext gc, RealMatrix transformMatrix) {
         gc.setFill(Color.GREEN);
         gc.setLineWidth(1.0);
-        /*drawCell(gc, -5, 1);
-        drawCell(gc, 5, 0);
-        drawCell(gc, 5, 1);*/
-        /*drawCell(gc, 4, 0);
-        drawCell(gc, 4, 1);*/
-        //gc.fillRect(0, gameCanvas.getHeight() / 2, gameCanvas.getWidth(), gameCanvas.getHeight() / 2);
         for (int i = -(int)DISTANCE_VIEW; i < DISTANCE_VIEW; i++) {
             for (int j = -(int)DISTANCE_VIEW; j < DISTANCE_VIEW; j++) {
-                drawCell(gc, i, j);
+                drawCell(gc, i, j, transformMatrix);
             }
         }
     }
 
     // TODO: May be custom utility class with a GraphicsContext field
-    private void drawCell(GraphicsContext gc, int x, int y) {
+    private void drawCell(GraphicsContext gc, int x, int y, RealMatrix transformMatrix) {
 
         double xPx = x * CELL_SIZE;
         double yPx = y * CELL_SIZE;
 
         try {
-            Vector2D a = meshPointToCanvasPoint2(new Vector3D(xPx, yPx, 0));
-            Vector2D b = meshPointToCanvasPoint2(new Vector3D(xPx+CELL_SIZE, yPx, 0));
-            Vector2D c = meshPointToCanvasPoint2(new Vector3D(xPx+CELL_SIZE, yPx+CELL_SIZE, 0));
-            Vector2D d = meshPointToCanvasPoint2(new Vector3D(xPx, yPx+CELL_SIZE, 0));
+            Vector2D a = meshPointToCanvasPoint(new Vector3D(xPx, yPx, 0), transformMatrix);
+            Vector2D b = meshPointToCanvasPoint(new Vector3D(xPx+CELL_SIZE, yPx, 0), transformMatrix);
+            Vector2D c = meshPointToCanvasPoint(new Vector3D(xPx+CELL_SIZE, yPx+CELL_SIZE, 0), transformMatrix);
+            Vector2D d = meshPointToCanvasPoint(new Vector3D(xPx, yPx+CELL_SIZE, 0), transformMatrix);
 
             CanvasUtils.drawLine(gc, a, b);
             CanvasUtils.drawLine(gc, b, c);
@@ -97,33 +102,18 @@ public class GameController {
         }
     }
 
-    private Vector2D meshPointToCanvasPoint2(Vector3D meshPoint) throws NonDisplayabledPoint {
+    private Vector2D meshPointToCanvasPoint(Vector3D meshPoint, RealMatrix transformMatrix) throws NonDisplayabledPoint {
 
-        RealMatrix clipMatrix = MatrixUtils.createRealMatrix(4, 4);
-
-        clipMatrix.setEntry(0, 0, 1.0 / (tan(toRadian(HORIZONTAL_FOV / 2.0))));
-        clipMatrix.setEntry(1, 1, 1.0 / tan(toRadian(VERTICAL_FOV / 2.0)));
-        clipMatrix.setEntry(2, 2, (-FAR_DISTANCE - NEAR_DISTANCE) / (FAR_DISTANCE - NEAR_DISTANCE));
-        clipMatrix.setEntry(2, 3, (2 * NEAR_DISTANCE * FAR_DISTANCE) / (NEAR_DISTANCE - FAR_DISTANCE));
-        clipMatrix.setEntry(3, 2, 1);
-
-        Vector3D[] lookBasis = player.getLookBasis();
-        Vector3D lookRelativePoint = changeBasis(changeOrigin(meshPoint, player.getPostion()), lookBasis[1].negate(), lookBasis[2], lookBasis[0]);
-
-        RealVector v = new ArrayRealVector(new double[]{lookRelativePoint.getX(), lookRelativePoint.getY(), lookRelativePoint.getZ(), 1.0});
-
-        RealVector res = clipMatrix.preMultiply(v);
-
+        RealMatrix v = MatrixUtils.createColumnRealMatrix(new double[]{meshPoint.getX(), meshPoint.getY(), meshPoint.getZ(), 1.0});
+        RealVector res = v.preMultiply(transformMatrix).getColumnVector(0);
         double w = res.getEntry(2);
 
-        // With this projection, if w > 0, the vertice must be clipped
-
+        // With this projection, if w > 0, the vertex must be clipped
         if (w > 0)
             throw new NonDisplayabledPoint();
 
         double x = res.getEntry(0);
         double y = res.getEntry(1);
-
         return new Vector2D(x * gameCanvas.getWidth() / (2.0 * w) + (gameCanvas.getWidth() / 2),
                 y * gameCanvas.getHeight() / (2.0 * w) + (gameCanvas.getHeight() / 2));
 

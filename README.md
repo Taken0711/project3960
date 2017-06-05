@@ -6,9 +6,10 @@
 
 
 ### Improvements
+* (Non direct look basis) throw away if no longer basis change
 * Move stuff out of GameController
-* Change basis and change origin in matrix for performance
-
+* Change basis: Use rotation matrix instead of change basis + inverse #Performance
+* Filter non-displayabled vertices before calculation
 
 ### New Features
 * Draw the wall floor
