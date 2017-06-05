@@ -3,6 +3,8 @@ package net.taken.project3960;
 import javafx.application.Platform;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.input.MouseEvent;
+import javafx.stage.Stage;
+import javafx.stage.Window;
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 import org.apache.commons.math3.util.Pair;
 import org.apache.logging.log4j.LogManager;
@@ -14,21 +16,23 @@ public class GameMouse {
 
     private static final Logger logger = LogManager.getLogger(GameMouse.class);
 
-    private static final double MOUSE_SENSITIVITY = 0.0001;
+    private static final double MOUSE_SENSITIVITY = 0.5;
 
     double deltaX;
     double deltaY;
     private Canvas gameCanvas;
+    private final Window window;
 
     public GameMouse(Canvas gameCanvas) {
         this.gameCanvas = gameCanvas;
+        window = gameCanvas.getScene().getWindow();
         resetCursor();
         gameCanvas.setOnMouseMoved(this::mouseMoved);
     }
 
     private void mouseMoved(MouseEvent mouseEvent) {
-        deltaX = mouseEvent.getX() - gameCanvas.getWidth() / 2;
-        deltaY = mouseEvent.getY() - gameCanvas.getHeight() / 2;
+        deltaX = mouseEvent.getScreenX() - window.getX() - window.getWidth() / 2;
+        deltaY = mouseEvent.getScreenY() - window.getY() - window.getHeight() / 2;
     }
 
     /**
@@ -36,7 +40,7 @@ public class GameMouse {
      * @return
      */
     public Pair<Double, Double> getAngles() {
-        Pair<Double, Double> res = new Pair<>((deltaX) * MOUSE_SENSITIVITY, (deltaY) * MOUSE_SENSITIVITY);
+        Pair<Double, Double> res = new Pair<>(deltaX * MOUSE_SENSITIVITY, deltaY * MOUSE_SENSITIVITY);
         resetCursor();
         deltaX = 0;
         deltaY = 0;
@@ -44,7 +48,7 @@ public class GameMouse {
     }
 
     private void resetCursor() {
-        moveCursor(gameCanvas.getWidth() / 2, gameCanvas.getHeight() / 2);
+        moveCursor(window.getX() + window.getWidth() / 2, window.getY() + window.getHeight() / 2);
     }
 
     /**

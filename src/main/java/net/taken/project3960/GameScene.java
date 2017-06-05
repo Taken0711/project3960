@@ -50,8 +50,6 @@ public class GameScene {
         this.gameCanvas = gameCanvas;
         this.player = player;
 
-        mouse = new GameMouse(gameCanvas);
-
         //TODO: Move this out
         clippingMatrix = MatrixUtils.createRealMatrix(4, 4);
         clippingMatrix.setEntry(0, 0, 1.0 / (tan(toRadian(HORIZONTAL_FOV / 2.0))));
@@ -59,6 +57,10 @@ public class GameScene {
         clippingMatrix.setEntry(2, 2, (-FAR_DISTANCE - NEAR_DISTANCE) / (FAR_DISTANCE - NEAR_DISTANCE));
         clippingMatrix.setEntry(2, 3, (2 * NEAR_DISTANCE * FAR_DISTANCE) / (NEAR_DISTANCE - FAR_DISTANCE));
         clippingMatrix.setEntry(3, 2, 1);
+    }
+
+    public void initListeners() {
+        mouse = new GameMouse(gameCanvas);
     }
 
     public void tick() {

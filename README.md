@@ -4,6 +4,8 @@
 
 ### Bugs
 
+* Remove my toRadian toDegree and use java's
+* Bugs with mouse mouvement and angles
 
 ### Improvements
 

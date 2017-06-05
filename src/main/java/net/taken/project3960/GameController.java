@@ -34,4 +34,7 @@ public class GameController {
     }
 
 
+    public void postInit() {
+        gameScene.initListeners();
+    }
 }

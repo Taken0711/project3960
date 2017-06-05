@@ -39,6 +39,8 @@ public class MainApp extends Application {
         stage.setScene(scene);
         stage.show();
 
+        gameController.postInit();
+
         new GameLoop(gameController::tick, gameController::render, MainApp::logFps).start();
     }
 }

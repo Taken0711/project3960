@@ -2,6 +2,8 @@ package net.taken.project3960;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
+import static java.lang.Math.*;
+
 public class Player {
 
     private Vector3D postion = new Vector3D(0.0, 0.0, GameScene.CELL_SIZE);
@@ -18,7 +20,7 @@ public class Player {
     }
 
     public Vector3D getLookVector() {
-        return new Vector3D(azimuth, elevation);
+        return new Vector3D(toRadians(azimuth), toRadians(elevation));
     }
 
     /**
