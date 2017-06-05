@@ -11,11 +11,16 @@ import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
+import org.apache.commons.math3.util.Pair;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import static java.lang.Math.tan;
 import static net.taken.project3960.util.geometry.GeometryUtils.toRadian;
 
 public class GameScene {
+    
+    private static final Logger logger = LogManager.getLogger(GameScene.class);
 
     public static final double CELL_SIZE = 256.0;
     public static final double DISTANCE_VIEW = 50.0;
@@ -37,9 +42,15 @@ public class GameScene {
     private Player player;
     private final RealMatrix clippingMatrix;
 
+    private GameMouse mouse;
+
+    private RealMatrix transformMatrix;
+
     public GameScene(Canvas gameCanvas, Player player) {
         this.gameCanvas = gameCanvas;
         this.player = player;
+
+        mouse = new GameMouse(gameCanvas);
 
         //TODO: Move this out
         clippingMatrix = MatrixUtils.createRealMatrix(4, 4);
@@ -50,16 +61,23 @@ public class GameScene {
         clippingMatrix.setEntry(3, 2, 1);
     }
 
-    public void render() {
-        CanvasUtils.clear(gameCanvas);
-        GraphicsContext gc = gameCanvas.getGraphicsContext2D();
+    public void tick() {
+
+        Pair<Double, Double> angles = mouse.getAngles();
+        logger.debug(angles);
+        player.addAzimuth(angles.getFirst());
+        player.addElevation(angles.getSecond());
 
         RealMatrix cameraSpaceMatrix = TransformationMatrix.getTranslationMatrix(player.getPostion().negate());
         Vector3D[] lookBasis = player.getLookBasis();
         RealMatrix projectionMatrix = TransformationMatrix.getChangeBasisMatrix(lookBasis);
 
+        transformMatrix = cameraSpaceMatrix.preMultiply(projectionMatrix).preMultiply(clippingMatrix);
+    }
 
-        RealMatrix transformMatrix = cameraSpaceMatrix.preMultiply(projectionMatrix).preMultiply(clippingMatrix);
+    public void render() {
+        CanvasUtils.clear(gameCanvas);
+        GraphicsContext gc = gameCanvas.getGraphicsContext2D();
 
         drawGround(gc, transformMatrix);
     }
@@ -109,5 +127,4 @@ public class GameScene {
                 y * gameCanvas.getHeight() / (2.0 * w) + (gameCanvas.getHeight() / 2));
 
     }
-
 }

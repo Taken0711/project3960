@@ -24,7 +24,7 @@ public class GameController {
 
     // TODO: move this to a world class
     public void tick(float timeStep) {
-
+        gameScene.tick();
     }
 
     public void render() {
