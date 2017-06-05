@@ -6,7 +6,7 @@ import java.util.function.Consumer;
 
 public class GameLoop extends AnimationTimer {
 
-    private static final float timeStep = 1f / 60;
+    private static final float TIME_STEP = 1f / 60;
 
     private final Consumer<Float> updater;
     private final Runnable renderer;
@@ -36,9 +36,9 @@ public class GameLoop extends AnimationTimer {
         accumulatedTime += secondsElapsed;
         previousTime = currentTime;
 
-        while (accumulatedTime >= timeStep) {
-            updater.accept(timeStep);
-            accumulatedTime -= timeStep;
+        while (accumulatedTime >= TIME_STEP) {
+            updater.accept(TIME_STEP);
+            accumulatedTime -= TIME_STEP;
         }
         renderer.run();
 

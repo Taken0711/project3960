@@ -1,11 +1,8 @@
 package net.taken.project3960.util.geometry;
 
-import javafx.geometry.Point3D;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
-
-import java.util.Arrays;
 
 public class GeometryUtils {
 

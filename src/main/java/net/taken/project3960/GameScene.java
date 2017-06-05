@@ -20,8 +20,8 @@ public class GameScene {
     public static final double CELL_SIZE = 256.0;
     public static final double DISTANCE_VIEW = 50.0;
 
-    private final double NEAR_DISTANCE = 0;
-    private final double FAR_DISTANCE = DISTANCE_VIEW * CELL_SIZE;
+    private static final double NEAR_DISTANCE = 0;
+    private static final double FAR_DISTANCE = DISTANCE_VIEW * CELL_SIZE;
 
     public static final double RATIO = 16.0 / 9.0;
     /**
