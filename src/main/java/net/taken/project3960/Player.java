@@ -30,8 +30,8 @@ public class Player {
     public Vector3D[] getLookBasis() {
         Vector3D e3 = getLookVector();
         Vector3D e1 = new Vector3D(e3.getY(), -e3.getX(), -e3.getZ());
-        Vector3D e2 = e1.crossProduct(e3);
-        return new Vector3D[] {e1, e2, e3};
+        Vector3D e2 = new Vector3D(-e3.getZ(), -e3.getY(), e3.getX());
+        return new Vector3D[] {e3, e2, e1};
     }
 
     public void setAzimuth(double azimuth) {
